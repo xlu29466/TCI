@@ -1,0 +1,11 @@
+
+.DS_Store
+TCI/TDIC_Main.o
+TCI/TDIMatrix.o
+TCI_GenerateGlobalDriver/GeneGlobDriver.o
+TCI_GenerateGlobalDriver/GenePanCanGlobDriver.o
+TCI_GenerateGlobalDriver/GeneTDIGlobalDriver_Main.o
+TCI_GenerateGlobalDriver/GTMatrix.o
+TCI_GenerateGlobalDriver/PanCanGTMatrix.o
+TCI_GenerateGlobalDriver/TDIMatrix.o
+TCI/TDIC.o
