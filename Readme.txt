@@ -17,8 +17,9 @@ Compile program:
 		
 Preparing data:
    	Both TCI and TCI_GD take 3 input matrices:
-   		1. An N-by-G matrix, referred to as A matrix, where N is the number of cases, and G is the number of 
-	   		genes.  Each row represent the somatic genome alteration (SGA) data of a tumor, where a "1" indicates that the corresponding gene is altered in the current tumor, and "0" otherwise.
+   		1. An N-by-G matrix, referred to as A matrix, where N is the number of cases, and G is the number of
+	   		genes.  Each row represent the somatic genome alteration (SGA) data of a tumor, where a "1" indicates
+	   		that the corresponding gene is altered in the current tumor, and "0" otherwise.
 
 	   	2. An N-by-G matrix, referred to as P matrix, where N and G should match those of the A matrix.  Again 
 	   		each row represents a tumor, where each element is the prior probability that an SGA, corresponding
