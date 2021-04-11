@@ -35,25 +35,26 @@ Preparing data:
    			represents whether the phenotype (indexed by D) is present ("1") or not ("0") in a given tumor.  
 
 Performing TCI analysis:
-	Search for population-wide driver
+	First, search population-wide driver of each phenotype using TCI_GD
 	TCI_GD:
-		./TCI_GD -p PmatrixFilePathname -f AmatrixFilePathname -d EmatrixFilePathname -o outputFilePathname
+		./TCI_GD -p PmatrixFilePathname -f AmatrixFilePathname -d EmatrixFilePathname -o populationDriverFilePathname
 
 
 		TCI_GD takes 3 input matrices as described above.  It outputs a D-by-2 common-separated-values (CSV) file,
 		in which each each row corresponding to a phenotype and its most probable driver at the population 
 		level.  
 
+	Then, perform TCI by utilizing the results from TCI_GD	
 	TCI:
-		./TCI  -p PmatrixFilePathname -f AmatrixFilePathname -d EmatrixFilePathname -o outputFileDirectoryName
-		 [-s startingRow -e endingRow]
+		./TCI  -p PmatrixFilePathname -f AmatrixFilePathname -d EmatrixFilePathname -g populationDriverFilePathname
+		 -o outputFileDirectoryName [-s startingRow -e endingRow]
 
-		TCI takes 3 input matrices as described above.  If no addition optional argument (-s and -e) provided, it
-		iterates through each tumor (rows in 3 matrices) as a test case and use the rest of the matrix as
-		training cases to perform a tumor-specific causal inference.  For each phenotype that present in a
-		tumor, e.g., a DEG event indicated by a "1" in E matrix, TCI tries to examine the posterior
-		probabilities of each SGA that is present in the same tumor as the candidate cause of the phenotype.
-		Thus, for each tumor, TCI output a D-by-G matrix in the director provided by "-o" option, in which
+		TCI takes 3 input matrices as described above plus the population-wide driver information.  If no addition 
+		optional argument (-s and -e) provided, it iterates through each tumor (rows in 3 matrices) as a test case 
+		and use the rest of the matrix as training cases to perform a tumor-specific causal inference.  
+		For each phenotype that present in a tumor, e.g., a DEG event indicated by a "1" in E matrix, TCI tries to 
+		examine the posterior probabilities of each SGA that is present in the same tumor as the candidate cause of 
+		the phenotype.  Thus, for each tumor, TCI output a D-by-G matrix in the director provided by "-o" option, in which
 		each row contains assigned posterior proability of SGAs in the tumor as the cause of a phenotype 
 		(indicated by the row).  
 
