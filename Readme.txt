@@ -21,15 +21,18 @@ Preparing data:
 	   		genes.  Each row represent the somatic genome alteration (SGA) data of a tumor, where a "1" indicates
 	   		that the corresponding gene is altered in the current tumor, and "0" otherwise.
 
-	   	2. An N-by-G matrix, referred to as P matrix, where N and G should match those of the A matrix.  Again 
-	   		each row represents a tumor, where each element is the prior probability that an SGA, corresponding
-	   		to a gene with "1" in A matrix, is a driver of a phenotype (e.g., a differentially expressed gene) in
-	   		a tumor.  The sum of the prior probability of a tumor (a row) should be 1.  One can prepare this 
+	   	2. An N-by-G matrix for TCI, referred to as P matrix, where N and G should match those of the A matrix for the TCI 	
+	   		analysis.  Again each row represents a tumor, where each element is the prior probability that an SGA, 
+	   		corresponding to a gene with "1" in A matrix, is a driver of a phenotype (e.g., a differentially expressed gene)
+	   		in a tumor.  The sum of the prior probability of a tumor (a row) should be 1.  One can prepare this 
 	   		matrix according to available prior knowledge, e.g., the probability that TP53 is a driver gene of a 
 	   		tumor and normalize among SGAs in a given tumor, or using a uniform prior if no prior knowledge is 
 	   		available. 
 
-   		2. An N-by-D matrix, referred to as E matrix, where N is the number of cases, and D is the number of 
+	   		For TCI_GD P matrix is a 1-by-G vector because it is not case-specific, and it consider every SGA ever
+	   		observed in a population as a candidate cause for a phenotype.
+
+   		3. An N-by-D matrix, referred to as E matrix, where N is the number of cases, and D is the number of 
    			phenotypes of interes, e.g., differentially expressed genes (DEGs).  Each row represents phenotypes
    			observed in a tumor, and rows should be matched with those in A & P matrices.  An element in a row 
    			represents whether the phenotype (indexed by D) is present ("1") or not ("0") in a given tumor.  

@@ -60,8 +60,8 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
     #pragma omp parallel for
     for(unsigned int ge = 0; ge < nGE; ge++)
     {
-        if (ge % 100 == 0)
-                printf("TDIC processing %d th gene.\n", ge);
+        if (ge % 1000 == 0)
+                printf("TCI_GD processing %dth phenotype.\n", ge);
         
         float normalizer = 0;
          unsigned int rowStartForGE = ge * nTumors; 
@@ -149,8 +149,8 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
     
     
     // Generate global driver from tumorPosteriorMatrix
-
     int* maxGtIndex = new int[nGE]() ;
+    float* maxGtProb = new float [nGE]();
     for (int ge = 0; ge < nGE; ge++)
     {
         float maxGtValue = 0;
@@ -160,8 +160,8 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
             {
                 maxGtValue = tumorPosteriorMatrix[gt * nGE + ge];
                 maxGtIndex[ge] = gt;   
-            }
-                
+                maxGtProb[ge] = tumorPosteriorMatrix[gt * nGE + ge];
+            }                
         }
     }
    
@@ -179,13 +179,11 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
         cout << "Exception opening output file. Please ensure you have an existing directory for file.\n";
     }
     
-    //start writing CSV representation of TDIMatrix    
     //write column headers
     for(int ge = 0; ge < nGE; ge++)
     {
         outFile << geNames[ge] << "," ;
-        outFile << gtNames[maxGtIndex[ge]];
-//        outFile << "\r\n";
+        outFile << gtNames[maxGtIndex[ge]] << "," << maxGtProb[ge];
         outFile << "\n";
     }
     

@@ -267,8 +267,8 @@ bool parseGlobDriverDict(string fileName, map<string, string>& globDriverMap){
  
         while(getline(inFileStream, line))
         {   
-            line.erase(std::remove(line.begin(), line.end(), '\n'), line.end()); //added 4/14/16
-            line.erase(std::remove(line.begin(), line.end(), '\r'), line.end()); //added 4/14/16
+            line.erase(std::remove(line.begin(), line.end(), '\n'), line.end()); 
+            line.erase(std::remove(line.begin(), line.end(), '\r'), line.end()); 
             fields = split(line, ',');
             globDriverMap.insert(std::pair<string, string>(fields.at(0), fields.at(1)));                
         }
