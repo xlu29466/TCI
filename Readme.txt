@@ -9,6 +9,8 @@ inference and a set of example files.
 
 
 Compile program:
+	Installation of OpenMP is required for the build.
+	GCC version 4.2.1
 	Run Makefile within TCI and TCI_GenerateGlobalDriver to compile programs, which will yield two executable programs:
 		1. TCI_GD.  This program searches for a "global driver" for a phenotype at the population level using  
 		    Bayesian causal framework 
@@ -65,4 +67,4 @@ Performing TCI analysis:
 		and end row of the block.  TCI will iterate through the cases within the block to perform TCI analysis
 		on these cases.
 
-
+There is an shell file "TCI_GD_TCI.sh" in "Data" fold that use the training data to run TCI codes. 
