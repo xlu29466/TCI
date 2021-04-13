@@ -5,7 +5,7 @@ inference and a set of example files.
 
 	2. TCI:  Source code for a program that perform tumor-specific causal inference
 
-	3. Data: A folder contains a set of training data.
+	3. Data: A folder contains a set of training data and a shell script running experiments.
 
 
 Compile program:
@@ -54,7 +54,7 @@ Performing TCI analysis:
 		./TCI  -p PmatrixFilePathname -f AmatrixFilePathname -d EmatrixFilePathname -g populationDriverFilePathname
 		 -o outputFileDirectoryName [-s startingRow -e endingRow]
 
-		TCI takes 3 input matrices as described above plus the population-wide driver information.  If no addition 
+		TCI takes 3 input matrices as described above plus the population-wide driver information (-g).  If no addition 
 		optional argument (-s and -e) provided, it iterates through each tumor (rows in 3 matrices) as a test case 
 		and use the rest of the matrix as training cases to perform a tumor-specific causal inference.  
 		For each phenotype that present in a tumor, e.g., a DEG event indicated by a "1" in E matrix, TCI tries to 
