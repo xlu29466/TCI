@@ -14,7 +14,6 @@ using namespace std;
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <omp.h>
 #include <float.h>
 #include <algorithm>
 

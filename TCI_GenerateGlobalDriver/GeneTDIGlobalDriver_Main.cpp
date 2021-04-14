@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <fstream>
-#include <omp.h>
 #include <time.h>
 #include "GeneGlobDriver.h"
 #include "GenePanCanGlobDriver.h"
