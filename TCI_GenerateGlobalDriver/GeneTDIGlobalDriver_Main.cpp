@@ -11,7 +11,7 @@
 #include <fstream>
 #include <time.h>
 #include "GeneGlobDriver.h"
-#include "GenePanCanGlobDriver.h"
+
 //#include "TDIMatrix.h"
 //#include "GTMatrix.h"
 //#include "PanCanGTMatrix.h"
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     
     
     GTMatrix* gtMatrix;
-    PanCanGTMatrix* panCanGtMatrix;
+
 //    string gtFilePath, gtcFilePath, globalDriverPath, degFilePath, outPath;
     string gtFilePath, gtcFilePath, degFilePath, outPath,strv0, priorFilePath;
 
@@ -100,51 +100,27 @@ int main(int argc, char** argv) {
     
     cout<<"v0="<< v0 <<"\n";
 
-    if (!gtFilePath.empty() && !gtcFilePath.empty() )//input both GTMatrix and PanCanGTMatrix
-    {
-        //gtFileePath and gtcFilePath can not both exist, either process GTMatrix or PanCanGTMatrix
-        cerr << "Can not input both GtMatrix and PanCanGtMatrix\n";
-        exit(1);            
-    }
-    else if (gtFilePath.empty() && gtcFilePath.empty() )
+    if (gtFilePath.empty() )
      {
         //both gtFileePath and gtcFilePath not exist
         cerr << "Must input GtMatrix or PanCanGtMatrix \n";
         exit(1);            
     }    
-    else if (!gtFilePath.empty()) //input GTMatrix
+    else  
     {           //read in GT matrices
         cout << "Reading GT matrix: " << gtFilePath << " and \n  global prior file: " << priorFilePath << "\n";
         gtMatrix = new GTMatrix(gtFilePath,priorFilePath);
         nTumors = gtMatrix->getNTumors();
     }
-    else //input PanCanGTMatrix
-    {   cout << "Reading PanCanGT matrix: " << gtcFilePath << "\n";
-        panCanGtMatrix = new PanCanGTMatrix(gtcFilePath);
-        nTumors = panCanGtMatrix->getNTumors();
-    }   
-     
     
-    //read in GE matrices
-       
+    //read in GE matrices       
     cout << "Reading GE matrix. " << degFilePath << "\n";
     TDIMatrix* geMatrix = new TDIMatrix(degFilePath);
-   
 
-
-    if (!gtFilePath.empty())//process GTMatrix
-    {
-
-        GeneGlobDriver(*gtMatrix, *geMatrix, outPath, v0);
-        delete gtMatrix;
-    }
-    else//process PanCanGTMatrix
-    {
-  
-        GenePanCanGlobDriver(*panCanGtMatrix, *geMatrix, outPath, v0);
-        delete panCanGtMatrix;
-    }
-      
+    // Call function to calculate global drivers
+    GeneGlobDriver(*gtMatrix, *geMatrix, outPath, v0);
+    
+    delete gtMatrix;      
     delete geMatrix;  
     
     time (&t_end);
@@ -156,9 +132,6 @@ int main(int argc, char** argv) {
     hours = minutes / 60;
     
     cout <<  " Elasped time is  " << hours << " hours " << minutes%60 << " minutes " << seconds%60 << " seconds.";
-
-    
-
     return 0;
 }
 

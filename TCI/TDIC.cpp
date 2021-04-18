@@ -7,8 +7,6 @@
 
 using namespace std;
 #include "TDIC.h"
-//#include "TDIMatrix.h"
-//#include "GTMatrix.h"
 #include <fstream>
 #include <math.h>
 #include <iostream>
@@ -67,7 +65,6 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
         cerr << "Bug: gtMatrix and geMatrix contain different number of tumors ";
     }
 
-
     cout << "Processing tumor " << curTumorName << " with " << nGT << " GAs, and " << nGE << " GEs" << "\n";
 
     /*Get names of mutated GTs and GEs for this tumor
@@ -94,14 +91,12 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
         
         // loop through each GT in the tumor
         for (unsigned int gt = 0; gt < nGT; gt++)
-        {
-           
+        {           
             // we use a binary tree to keep the statistics
             float T[2] = {0.0};
             float TE[4] = {0.0};
             float TD[4] = {0.0};
-            float TDE[8] = {0.0};
-            
+            float TDE[8] = {0.0};            
             
             int curGTIndx = tumorGtIndices[gt];
 
@@ -147,8 +142,7 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
             
             //Therr is no count for T0ge0, T0ge1 and T0
             TE[0]=TE[1] = 0.0;
-            T[0] = 0.0;
-                    
+            T[0] = 0.0;                    
                     
             float TFscore;
             if(curGTIndx == 0)
@@ -247,7 +241,6 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
     outFile.close();
 
     delete [] tumorPosteriorMatrix;
-
 }
 
 /**

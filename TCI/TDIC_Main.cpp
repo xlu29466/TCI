@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     PanCanGTMatrix* panCanGtMatrix;
     string gtFilePath, gtcFilePath, globalDriverPath, degFilePath, outPath, priorFilePath, strv0;
 
-    while((hasOpt = getopt(argc, argv, "hs:e:f:d:g:o:c:p:v:")) != -1)
+    while((hasOpt = getopt(argc, argv, "hs:e:f:d:g:o:p:v:")) != -1)
     {
         switch(hasOpt)
         {
@@ -138,41 +138,28 @@ int main(int argc, char** argv) {
         exit(1);
     }
     
-    if (!gtFilePath.empty() && !gtcFilePath.empty() )//input both GTMatrix and PanCanGTMatrix
-    {
-        //gtFileePath and gtcFilePath can not both exist, either process GTMatrix or PanCanGTMatrix
-        cerr << "Can not input both GtMatrix and PanCanGtMatrix\n";
-        exit(1);            
-    }
-    else if (gtFilePath.empty() && gtcFilePath.empty() )
+    if (gtFilePath.empty() )
      {
         //both gtFileePath and gtcFilePath not exist
-        cerr << "Must input GtMatrix or PanCanGtMatrix \n";
+        cerr << "Must input GtMatrix \n";
         exit(1);            
     }    
-    else if (!gtFilePath.empty()) //input GTMatrix
+    else 
     {           //read in GT matrices
-        cout << "Reading GT matrix: " << gtFilePath << " and prior file: " << priorFilePath << "\n";
+        cout << "Reading SGA matrix: " << gtFilePath << " and prior file: " << priorFilePath << "\n";
         gtMatrix = new GTMatrix(gtFilePath, priorFilePath);
         nTumors = gtMatrix->getNTumors();
     }
-    else //input PanCanGTMatrix
-    {   cout << "Reading PanCanGT matrix: " << gtcFilePath << "\n";
-        panCanGtMatrix = new PanCanGTMatrix(gtcFilePath);
-        nTumors = panCanGtMatrix->getNTumors();
-    }   
-     
  
-    //read in GE matrices
-       
-    cout << "Reading GE matrix. " << degFilePath << "\n";
+    //read in GE matrices       
+    cout << "Reading DEG matrix. " << degFilePath << "\n";
     TDIMatrix* geMatrix = new TDIMatrix(degFilePath);
    
     cout << "Reading global driver file.\n";
     map<string, string> globalDriverMap;
     parseGlobDriverDict(globalDriverPath, globalDriverMap);
 
-    cout << "Done with parsing global drivers" << endl;
+//    cout << "Done with parsing global drivers" << endl;
     
     if(rowStart == -1)
         rowStart = 0;
@@ -184,9 +171,6 @@ int main(int argc, char** argv) {
         cout << "Given rowEnd index is smaller than given rowStart. Exiting out.\n";
         exit(1);
     }
-
-    //tumorNames = gtMatrix->getTumorNames();
-//    vector<int> outGlobDriverIndx;
 
     // check use gpu flag, if yes branch out to TCIGPU(GTmatrix, DEG, Glog)
     
@@ -202,23 +186,8 @@ int main(int argc, char** argv) {
                     
         }
         delete gtMatrix;
-
     }
-    else//process PanCanGTMatrix
-    {
-        //get number of caner types 
-        int NcanType = panCanGtMatrix->getNumCanType();
-		cout << "There are " << NcanType << " cancer types. \n";
-//        #pragma omp parallel for
-        for(int i = rowStart; i < rowEnd; i++)
-        {
-            if (i % 50 == 0)
-                printf("TDIC processed %d tumors.\n", i);
-            PanCanTDIC(*panCanGtMatrix, *geMatrix, globalDriverMap, i, outPath, v0);
-        }
-        delete panCanGtMatrix;
-    }
-
+ 
     delete geMatrix;  
 
     time (&t_end);
