@@ -28,7 +28,9 @@ using namespace std;
 
 
 //Function declarations
-void TDIC(GTMatrix&, TDIMatrix&, map<string, string> & , const int, const string outPath, const float v0);
+void TDIC(GTMatrix&, TDIMatrix&, map<string, string> & , const int, const string , const float );
+void TDIC_marginal(GTMatrix& , TDIMatrix& , map<string, string>& , const string , const float );
+
 //bool parseGlobDriverDict(string fileName, map<string, string> globDriverMap);
 bool parseGlobDriverDict(string fileName, map<string, string>& globDriverMap);
 bool getDEGGlobDriverIndices(GTMatrix& gtMat, TDIMatrix& geMat, map<string, string>& mapGlobDrivers, vector<int>& inDEGIndices, vector<int>& OutGlobDriverVec);

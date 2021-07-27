@@ -244,6 +244,208 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
 }
 
 /**
+ * This function calculate marginal likelihood using TDI algorithm.  It calculate the causal score for all 
+ * GT-vs-GE pairs observed in a given tumor, populate a GT-by-GE score matrix and output to file.  
+ * @param gtMatrix     An TDIMatrix reference, in which SGA data of a collection of tumors are stored
+ *                              in a tumor-by-gene matrix
+ * @param geMatrix        An TDIMatrix reference, in which DEG data of a collection of tumors are stored
+ *                              in a tumor-by-gene matrix
+ * @param mapGlobDrivers        A reference to a dictionary of global drivers of DEGs in the "geMatrix",
+                                Each entry is keyed by the DEG gene name, and the value is a reference of a 
+                                vector<string> containing the two 2 global driver.  
+
+ */
+void TDIC_marginal(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string, 
+        string>& mapGlobDrivers, const string outPath, const float v0)
+{
+    // initializations 
+   
+    bool* gtDataMatrix = gtMatrix.getMatPtr();
+    bool* geDataMatrix = geMatrix.getMatPtr();
+    
+    
+     // Allocate memory for nGT x nGE matrix
+    unsigned int nGT = gtMatrix.getNGenes();
+    unsigned int nGE = geMatrix.getNGenes();
+    int nTumors = gtMatrix.getNTumors();
+    if (nTumors != geMatrix.getNTumors()) // number of tumors should agree between gtMatrix and geMatrix
+    {
+        cerr << "Bug: gtMatrix and geMatrix contain different number of tumors ";
+    }
+    float* priorMatrix = gtMatrix.getPriorPtr();
+
+    /*Get names of all GE and GTs     */    
+    vector<string> geNames = geMatrix.getGeneNames();    
+    vector<string> gtNames = gtMatrix.getGeneNames();
+
+    // Populate the global drivers corresponding to the GEs
+    vector<int> tumorGeIndices;
+    for (int i = 0; i < nGE; i++)
+    {
+        tumorGeIndices.push_back(i);
+    }
+    vector<int> tumorGlobDriverIndices;
+    //map <string, string> globalDriversMap;
+    if (!getDEGGlobDriverIndices(gtMatrix, geMatrix, mapGlobDrivers, tumorGeIndices, tumorGlobDriverIndices))
+    {
+        cout << "Error occurred when retrieving global drivers";
+    }
+   
+    // allocate memory to hold the matrix
+    float* tumorPosteriorMatrix = new float[nGT * nGE]();    
+
+    // loop through each GE
+    #pragma omp parallel for
+    for(unsigned int ge = 0; ge < nGE; ge++)
+    {
+        float normalizer = 0;
+        unsigned int curGeIndx = ge;
+        unsigned int rowStartForGE = curGeIndx * nTumors; 
+        
+        // find the globDriver for this give ge   
+        unsigned int curGDriverIndx = tumorGlobDriverIndices[ge]; //curGDriverIndx is found by ge indx        
+        unsigned int rowStartForGlobDriver = curGDriverIndx * nTumors;
+        
+        // loop through each GT in the tumor
+        for (unsigned int gt = 0; gt < nGT; gt++)
+        {           
+            // we use a binary tree to keep the statistics
+            float T[2] = {0.0};
+            float TE[4] = {0.0};
+            float TD[4] = {0.0};
+            float TDE[8] = {0.0};            
+            
+            int curGTIndx = gt;
+
+            int gtRowStart = curGTIndx * nTumors;
+            
+/*
+            float gtPrior = 0;
+             if (priorMatrix[gtRowStart + tumorID] == 0)
+            {
+                gtPrior = -FLT_MAX;
+            }
+            else
+            {
+                gtPrior = log(priorMatrix[gtRowStart + tumorID]);
+            } 
+*/
+
+            for(int t = 0; t < nTumors; t++)
+            {
+                int tVal = gtDataMatrix[gtRowStart + t];
+                int eVal = geDataMatrix[rowStartForGE + t];
+                int dVal = gtDataMatrix[rowStartForGlobDriver + t];
+
+                //TDE[0xTDE] T is the gt value, D is the global driver value, E is the ge value
+                //e.g. TDE[7] means TDE[0x110] save the count when T=1 and D=1 and E=1
+                TDE[tVal*4+dVal*2+eVal]++;
+            }
+
+            //TD[0xTD] T is the gt value, D is the global driver value
+            //e.g. TD[2] means TD[ox10] save the count when T=1 D=0
+            TD[0] = TDE[0] + TDE[1]; //T0D0 = T0D0E0 + T0D0E1 
+            TD[1] = TDE[2] + TDE[3]; //T0D1 = T0D1E0 + T0D1E1
+            TD[2] = TDE[4] + TDE[5]; //T1D0 = T1D0E0 + T1D0E1 
+            TD[3] = TDE[6] + TDE[7]; //T0D1 = T1D1E0 + T1D1E1 
+            //TE[0xTE]] T is the gt value, E is the ge value
+            //e.g. TE[3] means TE[0x11] save the count when T=1 and E=1
+            TE[0] = TDE[0] + TDE[2]; //T0E0 = T0D0E0 + T0D1E0
+            TE[1] = TDE[1] + TDE[3]; //T0E1 = T0D0E1 + T0D1E1 
+            TE[2] = TDE[4] + TDE[6]; //T1E0 = T1D0E0 + T1D1E0
+            TE[3] = TDE[5] + TDE[7]; //T1E1 = T1D0E1 + T1D1E1
+            //T[0xT] T is the gt value
+            //e.g. T[1] save the count when gt value T = 1 
+            T[0] = TE[0] + TE[1]; //T0 = T0E0 + T0E1
+            T[1] = TE[2] + TE[3]; //T1 = T1E0 + T1E1  
+            
+            //Therr is no count for T0ge0, T0ge1 and T0
+            TE[0]=TE[1] = 0.0;
+            T[0] = 0.0;                    
+                    
+            float TFscore;
+            if(curGTIndx == 0)
+            {
+                //TFscore = calcA0Fscore(T1,  T1ge1, T1ge0, T0,  T0ge1, T0ge0);
+                TFscore = calcA0Fscore(T[1],  TE[3], TE[2], T[0],  TE[1], TE[0]);
+            }
+            else 
+            {
+                //TFscore = calcFscore( T1,  T1ge1, T1ge0, T0,  T0ge1, T0ge0 );
+                TFscore = calcFscore( T[1],  TE[3], TE[2], T[0],  TE[1], TE[0] );
+            }
+
+            //float DFscore = calcFscore( D1, D1ge1, D1ge0, D0, D0ge1, D0ge0 );
+            float DFscore = calcFscore( TD[1], TDE[3], TDE[2], TD[0], TDE[1], TDE[0] );
+
+            float lnData = TFscore + DFscore;
+
+            tumorPosteriorMatrix[gt * nGE + ge] = lnData;
+
+            float pGT1GE1, pGT0GE1;
+            if(gt == 0)
+            {
+                pGT1GE1 = (ALPHANULL + TE[3]) / (ALPHANULL + ALPHANULL + T[1]);
+                pGT0GE1 = (ALPHANULL + TDE[1] + TDE[3]) / (ALPHANULL + ALPHANULL + nTumors - T[1]);
+            }
+            else
+            {
+                pGT1GE1 = (ALPHAIJK11 + TE[3]) / (ALPHAIJK11 + ALPHAIJK10 + T[1]);
+                pGT0GE1 = (ALPHAIJK01 + TDE[1] + TDE[3]) / (ALPHAIJK01 + ALPHAIJK00 + nTumors - T[1]);                      
+            }
+
+            if(pGT1GE1 <= pGT0GE1)
+            {
+                tumorPosteriorMatrix[gt* nGE + ge] = -FLT_MAX;
+            }
+        }        
+    }
+  
+    // save results to file
+     string outFileName;
+    if (*outPath.end() != '/')
+    {
+        outFileName = outPath + "/" +  "ICI_discrete_all_marginal" + ".csv";
+    }
+    else
+    {
+        outFileName = outPath + "ICI_discrete_all_marginal" + ".csv";
+    }
+
+    //ofstream file;
+    ofstream outFile;
+    try
+    {
+        outFile.open(outFileName.c_str());
+    }
+    catch(ofstream::failure e)
+    {
+        cout << "Exception opening output file. Please ensure you have an existing directory for file.\n";
+    }
+    
+    //start writing CSV representation of TDIMatrix    
+    //write column headers
+    for(int i = 0; i < nGE; i++)
+    {
+        outFile << "," << geNames[i];
+    }
+    outFile << "\n";
+    
+    for(int i = 0; i < nGT; i++)
+    {
+        outFile << gtNames[i];
+        for(int j = 0; j < nGE; j++)
+        {
+            outFile << "," << tumorPosteriorMatrix[i * nGE + j];
+        }
+        outFile << "\n";
+    }    
+    outFile.close();
+
+    delete [] tumorPosteriorMatrix;
+}
+
+/**
  * This function parse the text file that list top 2 global drivers for each of 
  * DEGs observed in a DEG matrix. 
  * @param A string fileName

@@ -11,7 +11,7 @@
 #include <fstream>
 #include <time.h>
 #include "TDIC.h"
-#include "PanCanTDIC.h"
+
 //#include "TDIMatrix.h"
 //#include "GTMatrix.h"
 //#include "PanCanGTMatrix.h"
@@ -28,29 +28,31 @@ int main(int argc, char** argv) {
     
     time_t t_start,t_end;
     time (&t_start);
-    float v0 = 0.1;    
+    float v0 = 0.05;    
     int rowStart = -1;
     int rowEnd = -1;
     int hasOpt;
     int nTumors;
     GTMatrix* gtMatrix;
-    PanCanGTMatrix* panCanGtMatrix;
-    string gtFilePath, gtcFilePath, globalDriverPath, degFilePath, outPath, priorFilePath, strv0;
+    
+    // values of argment 
+    string gtFilePath,  globalDriverPath, degFilePath, outPath, priorFilePath, strv0;
+    bool outPutMarginal = false;
 
-    while((hasOpt = getopt(argc, argv, "hs:e:f:d:g:o:p:v:")) != -1)
+    while((hasOpt = getopt(argc, argv, "mhs:e:f:d:g:o:p:v:")) != -1)
     {
         switch(hasOpt)
         {
+            case 'm' :
+                outPutMarginal = true;
+                break;
+
             case 'p':
                 priorFilePath = optarg;
                 break;
                 
             case 'f':
                 gtFilePath = optarg;
-                break;
-                
-            case 'c':
-                gtcFilePath = optarg;
                 break;
 
             case 'v':
@@ -159,8 +161,6 @@ int main(int argc, char** argv) {
     map<string, string> globalDriverMap;
     parseGlobDriverDict(globalDriverPath, globalDriverMap);
 
-//    cout << "Done with parsing global drivers" << endl;
-    
     if(rowStart == -1)
         rowStart = 0;
     if(rowEnd == -1 || rowEnd > nTumors)
@@ -172,12 +172,9 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    // check use gpu flag, if yes branch out to TCIGPU(GTmatrix, DEG, Glog)
-    
     cout << "v0 = " << v0 << "\n";
-    if (!gtFilePath.empty())//process GTMatrix
+    if (!gtFilePath.empty() && !gtFilePath.empty())
     {
-//        #pragma omp parallel for
         for(int i = rowStart; i < rowEnd; i++)
         {
             if (i % 50 == 0)
@@ -185,9 +182,15 @@ int main(int argc, char** argv) {
             TDIC(*gtMatrix, *geMatrix, globalDriverMap, i, outPath, v0);
                     
         }
-        delete gtMatrix;
     }
- 
+
+    //check if the flag for output overall marginal table
+    if (outPutMarginal && !gtFilePath.empty() && !gtFilePath.empty())
+    {
+        TDIC_marginal( *gtMatrix, *geMatrix, globalDriverMap, outPath, v0);
+    }
+
+    delete gtMatrix;
     delete geMatrix;  
 
     time (&t_end);
