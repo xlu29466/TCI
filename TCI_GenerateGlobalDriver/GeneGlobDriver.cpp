@@ -33,7 +33,7 @@ using namespace std;
  */
 //void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string, 
 //        string>& mapGlobDrivers, const int tumorID, const string outPath, const float v0){
-void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFileName, const float v0 ){
+void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFileName, const float v0, bool outPutMarginal ){
     //Calculate global driver score
     
     bool * gtDataMatrix = gtMatrix.getMatPtr();
@@ -146,26 +146,8 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
 
     }
     
-    
-    // Generate global driver from tumorPosteriorMatrix
-    int* maxGtIndex = new int[nGE]() ;
-    float* maxGtProb = new float [nGE]();
-    for (int ge = 0; ge < nGE; ge++)
-    {
-        float maxGtValue = 0;
-        for (int gt = 0; gt < nGT; gt++ )
-        {
-            if(tumorPosteriorMatrix[gt * nGE + ge] > maxGtValue)
-            {
-                maxGtValue = tumorPosteriorMatrix[gt * nGE + ge];
-                maxGtIndex[ge] = gt;   
-                maxGtProb[ge] = tumorPosteriorMatrix[gt * nGE + ge];
-            }                
-        }
-    }
-   
 
-    // save results to file
+     // save results to file
   
     //ofstream file;
     ofstream outFile;
@@ -177,6 +159,41 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
     {
         cout << "Exception opening output file. Please ensure you have an existing directory for file.\n";
     }
+    
+    // Output the marginal likelihood table
+    //output header
+    for (int gt = 0; gt < nGT; gt ++ )
+        outFile << "," << gtNames[gt];
+    outFile << "\n";
+
+    for (int ge = 0; ge < nGE; ge++)
+    {   
+        outFile << geNames[ge]  ;
+        for (int gt = 0; gt < nGT; gt++ )
+        {
+            outFile << "," << tumorPosteriorMatrix[gt * nGE + ge];
+        }
+        outFile << "\n";
+    }
+   
+       
+/*  // Generate global driver from tumorPosteriorMatrix
+    int* maxGtIndex = new int[nGE]() ;
+    float* maxGtProb = new float [nGE]();
+    for (int ge = 0; ge < nGE; ge++)
+    {   
+        float maxGtValue = 0;
+        for (int gt = 0; gt < nGT; gt++ )
+        {
+            if(tumorPosteriorMatrix[gt * nGE + ge] > maxGtValue)
+            {
+                maxGtValue = tumorPosteriorMatrix[gt * nGE + ge];
+                maxGtIndex[ge] = gt;   
+                maxGtProb[ge] = tumorPosteriorMatrix[gt * nGE + ge];
+            }                
+        }
+    }
+   */ 
     
     //write column headers
     for(int ge = 0; ge < nGE; ge++)
