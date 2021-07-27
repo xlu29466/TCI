@@ -1,6 +1,6 @@
 
-OBJS = GTMatrix.o PanCanGTMatrix.o GeneGlobDriver.o GenePanCanGlobDriver.o TDIMatrix.o GeneTDIGlobalDriver_Main.o 
-DEPS = GTMatrix.h PanCanGTMatrix.h GeneGlobDriver.h GenePanCanGlobDriver.h TDIMatrix.h
+OBJS = GTMatrix.o GeneGlobDriver.o  TDIMatrix.o GeneTDIGlobalDriver_Main.o 
+DEPS = GTMatrix.h  GeneGlobDriver.h TDIMatrix.h
 
 %.o: %.cpp $(DEPS)
 	g++  -O3 -c $< -o $@

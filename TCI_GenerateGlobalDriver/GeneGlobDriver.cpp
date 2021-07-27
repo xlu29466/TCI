@@ -33,7 +33,7 @@ using namespace std;
  */
 //void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string, 
 //        string>& mapGlobDrivers, const int tumorID, const string outPath, const float v0){
-void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFileName, const float v0, bool outPutMarginal ){
+void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFileName, const float v0){
     //Calculate global driver score
     
     bool * gtDataMatrix = gtMatrix.getMatPtr();
@@ -195,19 +195,19 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
     }
    */ 
     
-    //write column headers
+/*     //write column headers
     for(int ge = 0; ge < nGE; ge++)
     {
         outFile << geNames[ge] << "," ;
         outFile << gtNames[maxGtIndex[ge]] << "," << maxGtProb[ge];
         outFile << "\n";
     }
-    
+     */
     
  
     outFile.close();
 
-    delete [] maxGtIndex;
+//    delete [] maxGtIndex;
     delete [] tumorPosteriorMatrix;
 }
 

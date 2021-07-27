@@ -25,7 +25,7 @@ using namespace std;
 #define ALPHAIJK11 2.0
 
 //Function declarations
-void GeneGlobDriver(GTMatrix&, TDIMatrix&, const string outPath, const float v0, bool );
+void GeneGlobDriver(GTMatrix&, TDIMatrix&, const string outPath, const float v0);
 
 //vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
 vector<std::string> split(const std::string &s, char delim);
