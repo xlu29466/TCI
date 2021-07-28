@@ -150,10 +150,11 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
      // save results to file
   
     //ofstream file;
-    ofstream outFile;
+    ofstream outMatrixFile;
+    string marginalMatrixFileName = outFileName + ".matrix.csv";
     try
     {
-        outFile.open(outFileName.c_str());
+        outMatrixFile.open(marginalMatrixFileName.c_str());
     }
     catch(ofstream::failure e)
     {
@@ -163,21 +164,31 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
     // Output the marginal likelihood table
     //output header
     for (int gt = 0; gt < nGT; gt ++ )
-        outFile << "," << gtNames[gt];
-    outFile << "\n";
+        outMatrixFile << "," << gtNames[gt];
+    outMatrixFile << "\n";
 
     for (int ge = 0; ge < nGE; ge++)
     {   
-        outFile << geNames[ge]  ;
+        outMatrixFile << geNames[ge]  ;
         for (int gt = 0; gt < nGT; gt++ )
         {
-            outFile << "," << tumorPosteriorMatrix[gt * nGE + ge];
+            outMatrixFile << "," << tumorPosteriorMatrix[gt * nGE + ge];
         }
-        outFile << "\n";
+        outMatrixFile << "\n";
     }
-   
+
+    ofstream outFile;
+    try
+    {
+        outFile.open(outFileName.c_str());
+    }
+    catch(ofstream::failure e)
+    {
+        cout << "Exception opening output file. Please ensure you have an existing directory for file.\n";
+    }
+ 
        
-/*  // Generate global driver from tumorPosteriorMatrix
+    // Generate global driver from tumorPosteriorMatrix
     int* maxGtIndex = new int[nGE]() ;
     float* maxGtProb = new float [nGE]();
     for (int ge = 0; ge < nGE; ge++)
@@ -193,21 +204,18 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
             }                
         }
     }
-   */ 
     
-/*     //write column headers
+    //write column headers
     for(int ge = 0; ge < nGE; ge++)
     {
         outFile << geNames[ge] << "," ;
         outFile << gtNames[maxGtIndex[ge]] << "," << maxGtProb[ge];
         outFile << "\n";
     }
-     */
-    
- 
+
     outFile.close();
 
-//    delete [] maxGtIndex;
+    delete [] maxGtIndex;
     delete [] tumorPosteriorMatrix;
 }
 
