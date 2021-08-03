@@ -56,6 +56,29 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
  
     float* tumorPosteriorMatrix = new float[nGT * nGE]();
 
+    //ofstream file;
+    ofstream outMatrixFile, outPosteriorMatrixFile;
+    string marginalMatrixFileName = outFileName + ".marginal.matrix.csv";
+    string posteriorMatrixFileName = outFileName + ".posterior.matrix.csv";
+    try
+    {
+        outMatrixFile.open(marginalMatrixFileName.c_str());
+        outPosteriorMatrixFile.open(posteriorMatrixFileName.c_str());
+    }
+    catch(ofstream::failure e)
+    {
+        cout << "Exception opening output file. Please ensure you have an existing directory for file.\n";
+    }
+    
+    // Output the marginal likelihood table
+    //output header
+    for (int gt = 0; gt < nGT; gt ++ ){
+        outMatrixFile << "," << gtNames[gt];
+        outPosteriorMatrixFile << "," << gtNames[gt];
+    }
+    outMatrixFile << "\n";
+    outPosteriorMatrixFile << "\n";
+
     #pragma omp parallel for
     for(unsigned int ge = 0; ge < nGE; ge++)
     {
@@ -140,43 +163,23 @@ void GeneGlobDriver(GTMatrix& gtMatrix, TDIMatrix& geMatrix, const string outFil
             }
         }
         
-        // finished populating a column of GTs with respect to a given GE, normalize so that the column sum to 1
-        for (unsigned int gt = 0; gt < nGT; gt++)
-            tumorPosteriorMatrix[gt * nGE + ge] = exp(tumorPosteriorMatrix[gt * nGE + ge] - normalizer);  
-
-    }
-    
-
-     // save results to file
-  
-    //ofstream file;
-    ofstream outMatrixFile;
-    string marginalMatrixFileName = outFileName + ".matrix.csv";
-    try
-    {
-        outMatrixFile.open(marginalMatrixFileName.c_str());
-    }
-    catch(ofstream::failure e)
-    {
-        cout << "Exception opening output file. Please ensure you have an existing directory for file.\n";
-    }
-    
-    // Output the marginal likelihood table
-    //output header
-    for (int gt = 0; gt < nGT; gt ++ )
-        outMatrixFile << "," << gtNames[gt];
-    outMatrixFile << "\n";
-
-    for (int ge = 0; ge < nGE; ge++)
-    {   
+        // finished populating a marginal likelihood of GTs with respect to a given GE, normalize so that the column sum to 1
+        // output results to files
         outMatrixFile << geNames[ge]  ;
-        for (int gt = 0; gt < nGT; gt++ )
+        outPosteriorMatrixFile << geNames[ge];
+        for (unsigned int gt = 0; gt < nGT; gt++)
         {
             outMatrixFile << "," << tumorPosteriorMatrix[gt * nGE + ge];
+            tumorPosteriorMatrix[gt * nGE + ge] = exp(tumorPosteriorMatrix[gt * nGE + ge] - normalizer); 
+            outPosteriorMatrixFile << "," << tumorPosteriorMatrix[gt * nGE + ge];
         }
         outMatrixFile << "\n";
+        outPosteriorMatrixFile << "\n";
     }
+    outPosteriorMatrixFile.close();
+    outMatrixFile.close();
 
+    // Output global driver list
     ofstream outFile;
     try
     {
