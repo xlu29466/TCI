@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
     TDIMatrix* geMatrix = new TDIMatrix(degFilePath);
    
     cout << "Reading global driver file.\n";
-    map<string, string> globalDriverMap;
+    map<string, vector<string> > globalDriverMap;
     parseGlobDriverDict(globalDriverPath, globalDriverMap);
 
     if(rowStart == -1)

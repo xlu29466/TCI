@@ -34,7 +34,7 @@ using namespace std;
  * @param tumorID               The tumor to be process
  */
 void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string, 
-        string>& mapGlobDrivers, const int tumorID, const string outPath, const float v0){
+        vector<string> > & mapGlobDrivers, const int tumorID, const string outPath, const float v0){
     // initializations 
  
     string curTumorName = gtMatrix.getTumorNameById(tumorID);
@@ -49,9 +49,9 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
 
     float* priorMatrix = gtMatrix.getPriorPtr();
     // Find the global drivers corresponding to the
-    vector<int> tumorGlobDriverIndices;
+    vector<int> tumorGlobDriverIndices1, tumorGlobDriverIndices2;
     //map <string, string> globalDriversMap;
-    if (!getDEGGlobDriverIndices(gtMatrix, geMatrix, mapGlobDrivers, tumorGeIndices, tumorGlobDriverIndices))
+    if (!getDEGGlobDriverIndices(gtMatrix, geMatrix, mapGlobDrivers, tumorGeIndices, tumorGlobDriverIndices1, tumorGlobDriverIndices2))
     {
         cout << "Error occurred when retrieving global drivers";
     }
@@ -86,12 +86,20 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
         unsigned int rowStartForGE = curGeIndx * nTumors; 
         
         // find the globDriver for this give ge   
-        unsigned int curGDriverIndx = tumorGlobDriverIndices[ge]; //curGDriverIndx is found by ge indx        
+        unsigned int curGDriverIndx = tumorGlobDriverIndices1[ge]; //curGDriverIndx is found by ge indx    
         unsigned int rowStartForGlobDriver = curGDriverIndx * nTumors;
         
         // loop through each GT in the tumor
         for (unsigned int gt = 0; gt < nGT; gt++)
-        {           
+        {   
+            //Check if current gt is the same as GD, if yes, switch GD
+            unsigned int oldRowStartForGlobDriver = rowStartForGlobDriver; 
+            if (gt == curGDriverIndx){
+
+                unsigned int GD2Indx = tumorGlobDriverIndices2[ge];
+                rowStartForGlobDriver = GD2Indx * nTumors;
+            }
+
             // we use a binary tree to keep the statistics
             float T[2] = {0.0};
             float TE[4] = {0.0};
@@ -179,6 +187,10 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
             {
                 tumorPosteriorMatrix[gt* nGE + ge] = -FLT_MAX;
             }
+
+            // restore GD after processing current gt == GD
+            if (gt == curGDriverIndx)
+                rowStartForGlobDriver = oldRowStartForGlobDriver;
         }
 
         for(unsigned int gt = 0; gt < nGT; gt++)
@@ -256,13 +268,12 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
 
  */
 void TDIC_marginal(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string, 
-        string>& mapGlobDrivers, const string outPath, const float v0)
+        vector<string> >& mapGlobDrivers, const string outPath, const float v0)
 {
     // initializations 
    
     bool* gtDataMatrix = gtMatrix.getMatPtr();
-    bool* geDataMatrix = geMatrix.getMatPtr();
-    
+    bool* geDataMatrix = geMatrix.getMatPtr();    
     
      // Allocate memory for nGT x nGE matrix
     unsigned int nGT = gtMatrix.getNGenes();
@@ -284,9 +295,11 @@ void TDIC_marginal(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
     {
         tumorGeIndices.push_back(i);
     }
-    vector<int> tumorGlobDriverIndices;
+
+    // Declare 2 vectors to hold the 1st and 2nd global drivers for DEGs
+    vector<int> tumorGlobDriverIndices1, tumorGlobDriverIndices2;
     //map <string, string> globalDriversMap;
-    if (!getDEGGlobDriverIndices(gtMatrix, geMatrix, mapGlobDrivers, tumorGeIndices, tumorGlobDriverIndices))
+    if (!getDEGGlobDriverIndices(gtMatrix, geMatrix, mapGlobDrivers, tumorGeIndices, tumorGlobDriverIndices1, tumorGlobDriverIndices2))
     {
         cout << "Error occurred when retrieving global drivers";
     }
@@ -303,12 +316,21 @@ void TDIC_marginal(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
         unsigned int rowStartForGE = curGeIndx * nTumors; 
         
         // find the globDriver for this give ge   
-        unsigned int curGDriverIndx = tumorGlobDriverIndices[ge]; //curGDriverIndx is found by ge indx        
+        unsigned int curGDriverIndx = tumorGlobDriverIndices1[ge]; //curGDriverIndx is found by ge indx     
         unsigned int rowStartForGlobDriver = curGDriverIndx * nTumors;
         
         // loop through each GT in the tumor
         for (unsigned int gt = 0; gt < nGT; gt++)
         {           
+
+            //Check if current gt is the same as GD, if yes, switch GD
+            unsigned int oldRowStartForGlobDriver = rowStartForGlobDriver; 
+            if (gt == curGDriverIndx){
+
+                unsigned int GD2Indx = tumorGlobDriverIndices2[ge];
+                rowStartForGlobDriver = GD2Indx * nTumors;
+            }
+
             // we use a binary tree to keep the statistics
             float T[2] = {0.0};
             float TE[4] = {0.0};
@@ -318,18 +340,6 @@ void TDIC_marginal(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
             int curGTIndx = gt;
 
             int gtRowStart = curGTIndx * nTumors;
-            
-/*
-            float gtPrior = 0;
-             if (priorMatrix[gtRowStart + tumorID] == 0)
-            {
-                gtPrior = -FLT_MAX;
-            }
-            else
-            {
-                gtPrior = log(priorMatrix[gtRowStart + tumorID]);
-            } 
-*/
 
             for(int t = 0; t < nTumors; t++)
             {
@@ -398,6 +408,10 @@ void TDIC_marginal(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
             {
                 tumorPosteriorMatrix[gt* nGE + ge] = -FLT_MAX;
             }
+
+            // restore GD after processing current gt == GD
+            if (gt == curGDriverIndx)
+                rowStartForGlobDriver = oldRowStartForGlobDriver;
         }        
     }
   
@@ -451,10 +465,11 @@ void TDIC_marginal(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
  * @param A string fileName
  * @return A boolean value indicating the success  
  */
-bool parseGlobDriverDict(string fileName, map<string, string>& globDriverMap){
+bool parseGlobDriverDict(string fileName, map<string, vector<string> > & globDriverMap){
     ifstream inFileStream;
     string line;
-    vector<string> fields;    
+    vector<string> fields;  
+    vector<string> drivers;  
    
     try {
         inFileStream.open(fileName.c_str()); 
@@ -464,7 +479,11 @@ bool parseGlobDriverDict(string fileName, map<string, string>& globDriverMap){
             line.erase(std::remove(line.begin(), line.end(), '\n'), line.end()); 
             line.erase(std::remove(line.begin(), line.end(), '\r'), line.end()); 
             fields = split(line, ',');
-            globDriverMap.insert(std::pair<string, string>(fields.at(0), fields.at(1)));                
+            
+            drivers.push_back(fields.at(1));
+            drivers.push_back(fields.at(2));
+            
+            globDriverMap.insert(std::pair<string, vector<string> > (fields.at(0), drivers));                
         }
         inFileStream.close();
     }
@@ -514,7 +533,8 @@ std::vector<std::string> split(const std::string &s, char delim) {
  * @return 
  */
 
-bool getDEGGlobDriverIndices(GTMatrix& gtMat, TDIMatrix& geMat, map<string, string>& mapGlobDrivers, vector<int>& inDEGIndices, vector<int>& OutGlobDriverVec)
+bool getDEGGlobDriverIndices(GTMatrix& gtMat, TDIMatrix& geMat, map<string, vector<string> >& mapGlobDrivers, 
+                            vector<int>& inDEGIndices, vector<int>& OutGlobDriverVec1, vector<int>& OutGlobDriverVec2)                            
 {
     /*
      * First we must get the names of the DEGs corresponding to the indices in "inDEGIndices".
@@ -525,13 +545,17 @@ bool getDEGGlobDriverIndices(GTMatrix& gtMat, TDIMatrix& geMat, map<string, stri
     vector<string> inDEGNames;
     geMat.getGeneNamesByIndices(inDEGIndices, inDEGNames);
 
-    vector<string> globalDriverNames;
+    vector<string> globalDriverNames1, globalDriverNames2;
     for(int i = 0; i < inDEGNames.size(); i++)
     {
-        globalDriverNames.push_back(mapGlobDrivers[inDEGNames[i]]);
+        string geneName = inDEGNames[i];
+        vector<string> topDrivers = mapGlobDrivers[geneName]; 
+        globalDriverNames1.push_back(topDrivers[0]);
+        globalDriverNames2.push_back(topDrivers[1]);
     }
     
-    gtMat.getGeneIndicesByNames(globalDriverNames, OutGlobDriverVec);
+    gtMat.getGeneIndicesByNames(globalDriverNames1, OutGlobDriverVec1);
+    gtMat.getGeneIndicesByNames(globalDriverNames2, OutGlobDriverVec2);
     return true;
 }
 

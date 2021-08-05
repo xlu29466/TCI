@@ -28,12 +28,13 @@ using namespace std;
 
 
 //Function declarations
-void TDIC(GTMatrix&, TDIMatrix&, map<string, string> & , const int, const string , const float );
-void TDIC_marginal(GTMatrix& , TDIMatrix& , map<string, string>& , const string , const float );
+void TDIC(GTMatrix&, TDIMatrix&, map<string, vector<string> > & , const int, const string , const float );
+void TDIC_marginal(GTMatrix& , TDIMatrix& , map<string, vector<string> >& , const string , const float );
 
 //bool parseGlobDriverDict(string fileName, map<string, string> globDriverMap);
-bool parseGlobDriverDict(string fileName, map<string, string>& globDriverMap);
-bool getDEGGlobDriverIndices(GTMatrix& gtMat, TDIMatrix& geMat, map<string, string>& mapGlobDrivers, vector<int>& inDEGIndices, vector<int>& OutGlobDriverVec);
+bool parseGlobDriverDict(string fileName, map<string, vector<string> > & globDriverMap);
+bool getDEGGlobDriverIndices(GTMatrix& gtMat, TDIMatrix& geMat, map<string, vector<string> >& mapGlobDrivers, 
+                            vector<int>& inDEGIndices, vector<int>& OutGlobDriverVec1, vector<int>& OutGlobDriverVec2);
 
 //vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
 vector<std::string> split(const std::string &s, char delim);
