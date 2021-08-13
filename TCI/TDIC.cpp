@@ -95,7 +95,6 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
             //Check if current gt is the same as GD, if yes, switch GD
             unsigned int oldRowStartForGlobDriver = rowStartForGlobDriver; 
             if (gt == curGDriverIndx){
-
                 unsigned int GD2Indx = tumorGlobDriverIndices2[ge];
                 rowStartForGlobDriver = GD2Indx * nTumors;
             }
@@ -321,12 +320,10 @@ void TDIC_marginal(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
         
         // loop through each GT in the tumor
         for (unsigned int gt = 0; gt < nGT; gt++)
-        {           
-
+        { 
             //Check if current gt is the same as GD, if yes, switch GD
             unsigned int oldRowStartForGlobDriver = rowStartForGlobDriver; 
             if (gt == curGDriverIndx){
-
                 unsigned int GD2Indx = tumorGlobDriverIndices2[ge];
                 rowStartForGlobDriver = GD2Indx * nTumors;
             }
