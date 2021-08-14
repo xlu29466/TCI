@@ -189,7 +189,7 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
 
             // restore GD after processing current gt == GD
             if (gt == curGDriverIndx)
-                rowStartForGlobDriver = oldRowStartForGlobDriver;
+                rowStartForGlobDriver = curGDriverIndx * nTumors;
         }
 
         for(unsigned int gt = 0; gt < nGT; gt++)
