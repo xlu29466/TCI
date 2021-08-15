@@ -88,17 +88,10 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
         // find the globDriver for this give ge   
         unsigned int curGDriverIndx = tumorGlobDriverIndices1[ge]; //curGDriverIndx is found by ge indx    
         unsigned int rowStartForGlobDriver = curGDriverIndx * nTumors;
-        
+
         // loop through each GT in the tumor
         for (unsigned int gt = 0; gt < nGT; gt++)
         {   
-            //Check if current gt is the same as GD, if yes, switch GD
-            unsigned int oldRowStartForGlobDriver = rowStartForGlobDriver; 
-            if (gt == curGDriverIndx){
-                unsigned int GD2Indx = tumorGlobDriverIndices2[ge];
-                rowStartForGlobDriver = GD2Indx * nTumors;
-            }
-
             // we use a binary tree to keep the statistics
             float T[2] = {0.0};
             float TE[4] = {0.0};
@@ -106,9 +99,14 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
             float TDE[8] = {0.0};            
             
             int curGTIndx = tumorGtIndices[gt];
-
             int gtRowStart = curGTIndx * nTumors;
-            
+
+            //Check if current gt is the same as GD, if yes, switch GD 
+            if (curGTIndx == curGDriverIndx){
+                unsigned int GD2Indx = tumorGlobDriverIndices2[ge];
+                rowStartForGlobDriver = GD2Indx * nTumors;
+            }
+
             float gtPrior;
             if (priorMatrix[gtRowStart + tumorID] == 0)
             {
@@ -188,7 +186,7 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
             }
 
             // restore GD after processing current gt == GD
-            if (gt == curGDriverIndx)
+            if (curGTIndx == curGDriverIndx)
                 rowStartForGlobDriver = curGDriverIndx * nTumors;
         }
 
@@ -334,7 +332,7 @@ void TDIC_marginal(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
             float TD[4] = {0.0};
             float TDE[8] = {0.0};            
             
-            int curGTIndx = gt;
+            int curGTIndx = gt;  //This is special case because we are going through all GTs
 
             int gtRowStart = curGTIndx * nTumors;
 
