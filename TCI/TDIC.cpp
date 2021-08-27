@@ -179,13 +179,15 @@ void TDIC(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
                 pGT1GE1 = (ALPHAIJK11 + TE[3]) / (ALPHAIJK11 + ALPHAIJK10 + T[1]);
                 pGT0GE1 = (ALPHAIJK01 + TDE[1] + TDE[3]) / (ALPHAIJK01 + ALPHAIJK00 + nTumors - T[1]);                      
             }
-
+/* 
+            // the following lines remove the SNPs that has lower panetration rate than population baseline prevalence.
+            // Comment it out to compare results on 08/27/2021
             if(pGT1GE1 <= pGT0GE1)
             {
                 tumorPosteriorMatrix[gt* nGE + ge] = -FLT_MAX;
             }
 
-            // restore GD after processing current gt == GD
+ */            // restore GD after processing current gt == GD
             if (curGTIndx == curGDriverIndx)
                 rowStartForGlobDriver = curGDriverIndx * nTumors;
         }
@@ -398,13 +400,15 @@ void TDIC_marginal(GTMatrix& gtMatrix, TDIMatrix& geMatrix, map<string,
                 pGT1GE1 = (ALPHAIJK11 + TE[3]) / (ALPHAIJK11 + ALPHAIJK10 + T[1]);
                 pGT0GE1 = (ALPHAIJK01 + TDE[1] + TDE[3]) / (ALPHAIJK01 + ALPHAIJK00 + nTumors - T[1]);                      
             }
-
+/* 
+            // the following lines remove the SNPs that has lower panetration rate than population baseline prevalence.
+            // Comment it out to compare results on 08/27/2021
             if(pGT1GE1 <= pGT0GE1)
             {
                 tumorPosteriorMatrix[gt* nGE + ge] = -FLT_MAX;
             }
 
-            // restore GD after processing current gt == GD
+ */            // restore GD after processing current gt == GD
             if (gt == curGDriverIndx)
                 rowStartForGlobDriver = oldRowStartForGlobDriver;
         }        
